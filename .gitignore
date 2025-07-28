@@ -1,0 +1,7 @@
+cifar_data/
+lab4_data/
+mnist_data/
+fer2013_data/
+gstrb_data/
+model/
+__pycache__/
