@@ -1,57 +1,59 @@
 import numpy as np
 import skimage as ski
-import matplotlib.pyplot as plt
-plt.rcParams['font.sans-serif'] = ['SimHei']  # 用来正常显示中文标签
-plt.rcParams['axes.unicode_minus'] = False  # 用来正常显示负号
+import plotly.express as px
+from plotly.subplots import make_subplots
 
 # 读取示例图片
 img1 = ski.data.astronaut()
-hist1 = ski.exposure.histogram(img1)
 # 图像反转
 img2 = ski.util.invert(img1)
-hist2 = ski.exposure.histogram(img2)
 # 直方图均衡化
-img3 = ski.exposure.equalize_hist(img1)
-hist3 = ski.exposure.histogram(img3)
+img3 = np.stack([
+    ski.exposure.equalize_hist(img1[:, :, channel])
+    for channel in range(img1.shape[2])
+], axis=-1)
 # 直方图拉伸
 p, q = np.percentile(img1, (30, 70))
 img4 = ski.exposure.rescale_intensity(img1, in_range=(p, q))
-hist4 = ski.exposure.histogram(img4)
 # 直方图规定化
-img5 = ski.exposure.match_histograms(img1, ski.data.colorwheel())
-hist5 = ski.exposure.histogram(img5)
+reference_image = ski.data.colorwheel()
+img5 = np.stack([
+    ski.exposure.match_histograms(
+        img1[:, :, channel], reference_image[:, :, channel])
+    for channel in range(img1.shape[2])
+], axis=-1)
 
 # 显示结果
-fig, ax = plt.subplots(2, 5, figsize=(15, 6))
-ax[0, 0].imshow(img1)
-ax[0, 0].axis('off')
-ax[0, 0].set_title('原图')
-ax[0, 1].imshow(img2)
-ax[0, 1].axis('off')
-ax[0, 1].set_title('反转')
-ax[0, 2].imshow(img3)
-ax[0, 2].axis('off')
-ax[0, 2].set_title('直方图均衡化')
-ax[0, 3].imshow(img4)
-ax[0, 3].axis('off')
-ax[0, 3].set_title('直方图拉伸')
-ax[0, 4].imshow(img5)
-ax[0, 4].axis('off')
-ax[0, 4].set_title('直方图规定化')
-ax[1, 0].bar(range(256), hist1[0])
-ax[1, 0].set_title('原图直方图')
-ax[1, 0].set_ylim([0, 10000])
-ax[1, 1].bar(range(256), hist2[0])
-ax[1, 1].set_title('反转直方图')
-ax[1, 1].set_ylim([0, 10000])
-ax[1, 2].bar(range(256), hist3[0])
-ax[1, 2].set_title('直方图均衡化直方图')
-ax[1, 2].set_ylim([0, 10000])
-ax[1, 3].bar(range(256), hist4[0])
-ax[1, 3].set_title('直方图拉伸直方图')
-ax[1, 3].set_ylim([0, 10000])
-ax[1, 4].bar(range(256), hist5[0])
-ax[1, 4].set_title('直方图规定化直方图')
-ax[1, 4].set_ylim([0, 10000])
-plt.tight_layout()
-plt.show()
+fig = make_subplots(rows=2, cols=5, subplot_titles=[
+                    '原图', '反转', '直方图均衡化', '直方图拉伸', '直方图规定化', '原图直方图', '反转直方图', '直方图均衡化直方图', '直方图拉伸直方图', '直方图规定化直方图'])
+fig.add_trace(px.imshow(img1).data[0], row=1, col=1)
+fig.add_trace(px.imshow(img2).data[0], row=1, col=2)
+fig.add_trace(px.imshow(img3).data[0], row=1, col=3)
+fig.add_trace(px.imshow(img4).data[0], row=1, col=4)
+fig.add_trace(px.imshow(img5).data[0], row=1, col=5)
+
+
+def add_rgb_histogram(image, column):
+    channel_names = ['R', 'G', 'B']
+    for channel, name in enumerate(channel_names):
+        channel_data = image[:, :, channel]
+        value_range = (0, 255) if np.issubdtype(channel_data.dtype, np.integer) else (
+            float(channel_data.min()), float(channel_data.max()))
+        counts, bin_edges = np.histogram(
+            channel_data.ravel(), bins=256, range=value_range)
+        bin_centers = (bin_edges[:-1] + bin_edges[1:]) / 2
+        trace = px.bar(x=bin_centers, y=counts, labels={
+            'x': '像素值', 'y': '像素数量'}).data[0]
+        trace.name = name
+        trace.legendgroup = name
+        trace.marker.color = {'R': 'red', 'G': 'green', 'B': 'blue'}[name]
+        trace.opacity = 0.55
+        fig.add_trace(trace, row=2, col=column)
+
+
+for column, image in enumerate([img1, img2, img3, img4, img5], 1):
+    add_rgb_histogram(image, column)
+fig.update_layout(barmode='overlay')
+fig.update_yaxes(autorange='reversed', row=1)
+fig.update_traces(showscale=False, selector={'type': 'heatmap'})
+fig.show()

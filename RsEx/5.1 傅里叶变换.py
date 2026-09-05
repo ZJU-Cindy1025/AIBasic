@@ -1,8 +1,7 @@
 import skimage as ski
 import numpy as np
-from matplotlib import pyplot as plt
-plt.rcParams['font.sans-serif'] = ['SimHei']  # 用来正常显示中文标签
-plt.rcParams['axes.unicode_minus'] = False  # 用来正常显示负号
+import plotly.express as px
+from plotly.subplots import make_subplots
 
 # 导入测试图片
 img = ski.data.camera()
@@ -16,17 +15,17 @@ imgh = ski.filters.butterworth(img, 0.05, high_pass=True)
 imgl = ski.filters.butterworth(img, 0.05, high_pass=False)
 
 # 展示结果
-fig, ax = plt.subplots(2, 2)
-ax[0, 0].axis('off')
-ax[0, 0].imshow(img, 'gray')
-ax[0, 0].set_title('原图')
-ax[0, 1].axis('off')
-ax[0, 1].imshow(fimg, 'gray')
-ax[0, 1].set_title('频谱图')
-ax[1, 0].axis('off')
-ax[1, 0].imshow(imgh, 'gray')
-ax[1, 0].set_title('高通滤波')
-ax[1, 1].axis('off')
-ax[1, 1].imshow(imgl, 'gray')
-ax[1, 1].set_title('低通滤波')
-plt.show()
+fig = make_subplots(rows=2, cols=2, subplot_titles=[
+                    '原图', '频谱图', '高通滤波', '低通滤波'])
+for index, image_data in enumerate([img, fimg, imgh, imgl]):
+    if index == 1:
+        trace = px.imshow(image_data).data[0]
+        trace.colorscale = 'gray'
+    else:
+        trace = px.imshow(image_data).data[0]
+        trace.colorscale = 'gray'
+    trace.coloraxis = None
+    fig.add_trace(trace, row=index // 2 + 1, col=index % 2 + 1)
+fig.update_yaxes(autorange='reversed')
+fig.update_traces(showscale=False, selector={'type': 'heatmap'})
+fig.show()

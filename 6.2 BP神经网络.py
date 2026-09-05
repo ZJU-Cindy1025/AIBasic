@@ -2,10 +2,8 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 import torch.nn.functional as F
-import matplotlib.pyplot as plt
+import plotly.express as px
 from tqdm import tqdm
-plt.rcParams['font.sans-serif'] = ['SimHei']
-plt.rcParams['axes.unicode_minus'] = False
 # 数据
 x = torch.tensor([
     [0, 0, 1],
@@ -68,5 +66,5 @@ for epoch in tqdm(range(1000)):
 # 预测
 predict = net(x)
 print(predict.cpu().detach().numpy())
-plt.plot(losses)
-plt.show()
+fig = px.line(y=losses, labels={'x': '迭代次数', 'y': '损失'})
+fig.show()

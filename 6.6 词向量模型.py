@@ -3,10 +3,8 @@ import torch.nn as nn
 import torch.optim as optim
 import jieba
 from tqdm import tqdm
-import matplotlib.pyplot as plt
+import plotly.express as px
 
-plt.rcParams["font.sans-serif"] = ["SimHei"]
-plt.rcParams["axes.unicode_minus"] = False
 # 示例数据
 corpus = """谋曹操
 【奸雄】：游戏开始时，你可以选择获得至多两枚“治世”标记。当你受到伤害后，你可以获得对你造成伤害的牌，若你没有“治世”标记，你摸一张牌，然后你可以移除1枚“治世”标记。
@@ -88,5 +86,5 @@ with torch.no_grad():
 for word, index in word_to_index.items():
     print(f'Word: {word}, Vector: {word_vectors[index]}')
 
-plt.plot(losses)
-plt.show()
+fig = px.line(y=losses, labels={'x': '迭代次数', 'y': '损失'})
+fig.show()

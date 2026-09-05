@@ -1,7 +1,6 @@
 import skimage as ski
-import matplotlib.pyplot as plt
-plt.rcParams['font.sans-serif'] = ['SimHei']  # 用来正常显示中文标签
-plt.rcParams['axes.unicode_minus'] = False  # 用来正常显示负号
+import plotly.express as px
+from plotly.subplots import make_subplots
 
 # 读取示例图片
 img1 = ski.data.camera()
@@ -19,21 +18,27 @@ img4 = ski.filters.sobel(img1)
 img5 = ski.filters.unsharp_mask(img1, radius=1, amount=10)
 
 # 显示结果
-fig, ax = plt.subplots(1, 5, figsize=(15, 3))
-ax[0].axis('off')
-ax[0].imshow(img1, cmap='gray')
-ax[0].set_title('原图')
-ax[1].axis('off')
-ax[1].imshow(img2, cmap='gray')
-ax[1].set_title('拉普拉斯锐化')
-ax[2].axis('off')
-ax[2].imshow(img3, cmap='gray')
-ax[2].set_title('Roberts算子锐化')
-ax[3].axis('off')
-ax[3].imshow(img4, cmap='gray')
-ax[3].set_title('Sobel算子锐化')
-ax[4].axis('off')
-ax[4].imshow(img5, cmap='gray')
-ax[4].set_title('unsharp_mask锐化')
-plt.tight_layout()
-plt.show()
+fig = make_subplots(rows=1, cols=5, subplot_titles=[
+                    '原图', '拉普拉斯锐化', 'Roberts算子锐化', 'Sobel算子锐化', 'unsharp_mask锐化'])
+image_traces = [
+    px.imshow(img1).data[0],
+    px.imshow(img2).data[0],
+    px.imshow(img3).data[0],
+    px.imshow(img4).data[0],
+    px.imshow(img5).data[0],
+]
+image_traces[0].colorscale = 'gray'
+image_traces[1].colorscale = 'gray'
+image_traces[2].colorscale = 'gray'
+image_traces[3].colorscale = 'gray'
+image_traces[4].colorscale = 'gray'
+for trace in image_traces:
+    trace.coloraxis = None
+image_traces[1].zmid = 0
+image_traces[2].zmid = 0
+image_traces[3].zmid = 0
+for column, trace in enumerate(image_traces, 1):
+    fig.add_trace(trace, row=1, col=column)
+fig.update_yaxes(autorange='reversed')
+fig.update_traces(showscale=False, selector={'type': 'heatmap'})
+fig.show()

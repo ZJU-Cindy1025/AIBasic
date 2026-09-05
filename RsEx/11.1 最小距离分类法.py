@@ -1,9 +1,8 @@
 import skimage as ski
-import matplotlib.pyplot as plt
+import plotly.express as px
+from plotly.subplots import make_subplots
 import numpy as np
 from scipy.spatial import distance
-plt.rcParams['font.sans-serif'] = ['SimHei']  # 用来正常显示中文标签
-plt.rcParams['axes.unicode_minus'] = False  # 用来正常显示负号
 # 读取图像
 image = ski.data.coins()
 # 转换训练标签
@@ -55,17 +54,12 @@ def min_distance_classifier(train_data, train_label):
 result_label = min_distance_classifier(image, train_label)
 
 # 显示分类结果
-fig, ax = plt.subplots(2, 2)
-ax[0, 0].imshow(image, cmap='gray')
-ax[0, 0].set_title('原图')
-ax[0, 0].axis('off')
-ax[0, 1].imshow(train_label, cmap='gray')
-ax[0, 1].set_title('训练标签')
-ax[0, 1].axis('off')
-ax[1, 0].imshow(true_label, cmap='gray')
-ax[1, 0].set_title('真实标签')
-ax[1, 0].axis('off')
-ax[1, 1].imshow(result_label, cmap='gray')
-ax[1, 1].set_title('最小距离分类标签')
-ax[1, 1].axis('off')
-plt.show()
+fig = make_subplots(rows=2, cols=2, subplot_titles=[
+                    '原图', '训练标签', '真实标签', '最小距离分类标签'])
+for row, col, image_data in [(1, 1, image), (1, 2, train_label), (2, 1, true_label), (2, 2, result_label)]:
+    fig.add_trace(
+        px.imshow(image_data).data[0], row=row, col=col)
+fig.update_yaxes(autorange='reversed')
+fig.update_traces(colorscale='gray', coloraxis=None,
+                  showscale=False, selector={'type': 'heatmap'})
+fig.show()

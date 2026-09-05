@@ -3,10 +3,9 @@ import torch.nn as nn
 import torch.optim as optim
 from torchvision import datasets, transforms
 from tqdm import tqdm
-import matplotlib.pyplot as plt
+import plotly.express as px
+from plotly.subplots import make_subplots
 import numpy as np
-plt.rcParams['font.sans-serif'] = ['SimHei']  # 用来正常显示中文标签
-plt.rcParams['axes.unicode_minus'] = False  # 用来正常显示负号
 # BP神经网络
 
 
@@ -137,21 +136,14 @@ for image, label in test_loader:
     break
 
 # 显示对抗样本和损失函数
-fig, ax = plt.subplots(2, 8, figsize=(16, 4))
+fig = make_subplots(rows=2, cols=8)
 for i in range(8):
-    ax[0, i].imshow(image[i].cpu().numpy().reshape(28, 28), cmap='gray')
-    ax[0, i].axis('off')
-    ax[0, i].set_title('原始样本 %d' % label[i])
-    ax[1, i].imshow(adversarial_example[i].cpu(
-    ).numpy().reshape(28, 28), cmap='gray')
-    ax[1, i].axis('off')
-    ax[1, i].set_title('对抗样本 %d' % pred[i])
-plt.tight_layout()
-plt.show()
-plt.close()
-fig, ax = plt.subplots(1, 2, figsize=(8, 4))
-ax[0].plot(Losses_train)
-ax[0].set_title('训练损失')
-ax[1].plot(Losses_fgsm)
-ax[1].set_title('对抗样本生成损失')
-plt.show()
+    fig.add_trace(px.imshow(image[i].cpu().numpy().reshape(
+        28, 28)).data[0], row=1, col=i + 1)
+    fig.add_trace(px.imshow(adversarial_example[i].cpu(
+    ).numpy().reshape(28, 28)).data[0], row=2, col=i + 1)
+fig.show()
+loss_fig = make_subplots(rows=1, cols=2, subplot_titles=['训练损失', '对抗样本生成损失'])
+loss_fig.add_trace(px.line(y=Losses_train).data[0], row=1, col=1)
+loss_fig.add_trace(px.line(y=Losses_fgsm).data[0], row=1, col=2)
+loss_fig.show()

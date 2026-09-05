@@ -1,8 +1,7 @@
 import skimage as ski
-import matplotlib.pyplot as plt
+import plotly.express as px
+from plotly.subplots import make_subplots
 import pandas as pd
-plt.rcParams['font.sans-serif'] = ['SimHei']  # 用来正常显示中文标签
-plt.rcParams['axes.unicode_minus'] = False  # 用来正常显示负号
 # 读取示例图片
 img1 = ski.data.grass()
 img2 = ski.data.gravel()
@@ -12,20 +11,20 @@ glcm1 = ski.feature.graycomatrix(img1, [1], [1], 256)
 glcm2 = ski.feature.graycomatrix(img2, [1], [1], 256)
 
 # 显示灰度共生矩阵
-fig, ax = plt.subplots(2, 2, figsize=(4, 4))
-ax[0, 0].axis('off')
-ax[0, 0].imshow(img1, cmap='gray')
-ax[0, 0].set_title('grass')
-ax[0, 1].axis('off')
-ax[0, 1].imshow(img2, cmap='gray')
-ax[0, 1].set_title('gravel')
-ax[1, 0].axis('off')
-ax[1, 0].imshow(glcm1[:, :, 0, 0], cmap='gray')
-ax[1, 0].set_title('grass的灰度共生矩阵')
-ax[1, 1].axis('off')
-ax[1, 1].imshow(glcm2[:, :, 0, 0], cmap='gray')
-ax[1, 1].set_title('gravel的灰度共生矩阵')
-plt.show()
+fig = make_subplots(rows=2, cols=2, subplot_titles=[
+                    'grass', 'gravel', 'grass的灰度共生矩阵', 'gravel的灰度共生矩阵'])
+fig.add_trace(
+    px.imshow(img1).data[0], row=1, col=1)
+fig.add_trace(
+    px.imshow(img2).data[0], row=1, col=2)
+fig.add_trace(px.imshow(
+    glcm1[:, :, 0, 0]).data[0], row=2, col=1)
+fig.add_trace(px.imshow(
+    glcm2[:, :, 0, 0]).data[0], row=2, col=2)
+fig.update_yaxes(autorange='reversed')
+fig.update_traces(colorscale='gray', coloraxis=None,
+                  showscale=False, selector={'type': 'heatmap'})
+fig.show()
 
 # 计算灰度共生矩阵的特征
 contrast1 = ski.feature.graycoprops(glcm1, 'contrast')

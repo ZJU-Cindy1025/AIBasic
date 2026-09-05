@@ -3,10 +3,9 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 from tqdm import tqdm
-import matplotlib.pyplot as plt
+import plotly.express as px
+from plotly.subplots import make_subplots
 import pandas as pd
-plt.rcParams["font.sans-serif"] = ["SimHei"]
-plt.rcParams["axes.unicode_minus"] = False
 # 输入数据
 a = [i for i in range(21)]
 b = [i**2-20*i+40 for i in a]
@@ -49,7 +48,8 @@ criterion = criterion.to(device)
 
 losses = []
 # 绘图
-fig, ax = plt.subplots(2, 5, figsize=(20, 8))
+fig = make_subplots(rows=2, cols=5, subplot_titles=[
+                    f'第{epoch}次拟合' for epoch in range(10, 101, 10)])
 # 训练网络
 for epoch in tqdm(range(1, 101)):
     # 梯度清零
@@ -65,22 +65,21 @@ for epoch in tqdm(range(1, 101)):
     losses.append(loss.item())
     if epoch % 10 == 0:
         output = net(a.float())
-        ax[(epoch - 1) // 10 // 5, (epoch - 1) // 10 % 5].plot(
-            a.cpu().numpy(), output.cpu().detach().numpy().reshape(-1)
-        )
-        ax[(epoch - 1) // 10 // 5, (epoch - 1) // 10 % 5].scatter(
-            a.cpu().numpy(), b.cpu().numpy()
-        )
-        ax[(epoch - 1) // 10 // 5, (epoch - 1) // 10 % 5].set_title(
-            "第%d次拟合" % epoch
-        )
-plt.show()
-plt.close()
+        row = (epoch - 1) // 50 + 1
+        col = (epoch - 1) // 10 % 5 + 1
+        fit_frame = pd.DataFrame(
+            {'输入值': a.cpu().numpy(), '模型输出值': output.cpu().detach().numpy().reshape(-1)})
+        target_frame = pd.DataFrame(
+            {'输入值': a.cpu().numpy(), '标签': b.cpu().numpy()})
+        fig.add_trace(px.line(fit_frame, x='输入值',
+                      y='模型输出值').data[0], row=row, col=col)
+        fig.add_trace(px.scatter(target_frame, x='输入值',
+                      y='标签').data[0], row=row, col=col)
+fig.show()
 # 测试网络
 output = net(a.float())
 result = pd.DataFrame({"输入值": a.cpu().numpy(), "模型输出值": output.cpu(
 ).detach().numpy().reshape(-1), "标签": b.cpu().numpy()})
 result.set_index("输入值", inplace=True)
 print(result)
-plt.plot(losses)
-plt.show()
+px.line(y=losses, labels={'x': '迭代次数', 'y': '损失'}).show()

@@ -1,10 +1,9 @@
 from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import Binarizer
+import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
-import seaborn as sns
-plt.rcParams['font.sans-serif'] = ['SimHei']  # 用来正常显示中文标签
-plt.rcParams['axes.unicode_minus'] = False  # 用来正常显示负号
+import plotly.express as px
+from plotly.subplots import make_subplots
 
 data1 = pd.DataFrame({
     '商品价格': [1, 2, 3, 4, 5, 6, 7, 8, 9],
@@ -39,18 +38,23 @@ b2 = model.coef_
 print('回归参数a2的值：', a2)
 print('回归参数b2的值：', b2)
 
-fig, ax = plt.subplots(2, 2, figsize=(8, 8))
-# 输出data1的线性回归
-sns.regplot(x='商品价格', y='拒绝意愿', data=data1, ax=ax[0, 0], logistic=False)
-ax[0, 0].set_title('data1线性回归')
-# 输出data2的线性回归
-sns.regplot(x='商品价格', y='拒绝意愿', data=data2, ax=ax[0, 1], logistic=False)
-ax[0, 1].set_title('data2线性回归')
-# 输出data1的逻辑斯蒂回归
-sns.regplot(x='商品价格', y='拒绝意愿', data=data1, ax=ax[1, 0], logistic=True)
-ax[1, 0].set_title('data1逻辑斯蒂回归')
-# 输出data2的逻辑斯蒂回归
-sns.regplot(x='商品价格', y='拒绝意愿', data=data2, ax=ax[1, 1], logistic=True)
-ax[1, 1].set_title('data2逻辑斯蒂回归')
-plt.tight_layout()
-plt.show()
+fig = make_subplots(rows=2, cols=2, subplot_titles=[
+                    'data1线性回归', 'data2线性回归', 'data1逻辑斯蒂回归', 'data2逻辑斯蒂回归'])
+for row, col, frame in [(1, 1, data1), (1, 2, data2)]:
+    x_values = frame['商品价格']
+    y_values = frame['拒绝意愿']
+    line_x = np.linspace(x_values.min(), x_values.max(), 100)
+    line_y = np.polyval(np.polyfit(x_values, y_values, 1), line_x)
+    fig.add_trace(px.scatter(x=x_values, y=y_values).data[0], row=row, col=col)
+    fig.add_trace(px.line(x=line_x, y=line_y).data[0], row=row, col=col)
+for row, col, frame in [(2, 1, data1), (2, 2, data2)]:
+    labels = (frame['拒绝意愿'] > 0.5).astype(int)
+    logistic_model = LogisticRegression(
+        solver='liblinear').fit(frame[['商品价格']], labels)
+    line_x = np.linspace(frame['商品价格'].min(), frame['商品价格'].max(), 100)
+    line_x_frame = pd.DataFrame({'商品价格': line_x})
+    line_y = logistic_model.predict_proba(line_x_frame)[:, 1]
+    fig.add_trace(px.scatter(
+        x=frame['商品价格'], y=frame['拒绝意愿']).data[0], row=row, col=col)
+    fig.add_trace(px.line(x=line_x, y=line_y).data[0], row=row, col=col)
+fig.show()

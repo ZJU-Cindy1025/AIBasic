@@ -2,13 +2,12 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 import torch.nn.functional as F
-import matplotlib.pyplot as plt
+import plotly.express as px
+from plotly.subplots import make_subplots
 from skimage import data
 from tqdm import tqdm
 import numpy as np
 
-plt.rcParams["font.sans-serif"] = ["SimHei"]
-plt.rcParams["axes.unicode_minus"] = False
 
 # 初始影像
 origin_data = data.binary_blobs()
@@ -77,17 +76,10 @@ for epoch in tqdm(range(100)):
 
 # 预测
 predict = net(x)
-fig, ax = plt.subplots(2, 2)
-ax[0, 0].imshow(train_data)
-ax[0, 0].axis("off")
-ax[0, 0].set_title("原图")
-ax[0, 1].imshow(label_data, cmap="gray")
-ax[0, 1].axis("off")
-ax[0, 1].set_title("标签")
-ax[1, 0].imshow(np.array(predict.cpu().detach().numpy()
-                         ).reshape(512, 512), cmap="gray")
-ax[1, 0].axis("off")
-ax[1, 0].set_title("预测")
-ax[1, 1].plot(losses)
-ax[1, 1].set_title("损失")
-plt.show()
+fig = make_subplots(rows=2, cols=2, subplot_titles=['原图', '标签', '预测', '损失'])
+fig.add_trace(px.imshow(train_data).data[0], row=1, col=1)
+fig.add_trace(px.imshow(label_data).data[0], row=1, col=2)
+fig.add_trace(px.imshow(np.array(predict.cpu().detach().numpy()
+                                 ).reshape(512, 512)).data[0], row=2, col=1)
+fig.add_trace(px.line(y=losses).data[0], row=2, col=2)
+fig.show()

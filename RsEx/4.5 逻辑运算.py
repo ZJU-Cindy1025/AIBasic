@@ -1,7 +1,6 @@
 import skimage as ski
-import matplotlib.pyplot as plt
-plt.rcParams['font.sans-serif'] = ['SimHei']  # 用来正常显示中文标签
-plt.rcParams['axes.unicode_minus'] = False  # 用来正常显示负号
+import plotly.express as px
+from plotly.subplots import make_subplots
 # 读取图像
 img1 = ski.data.horse()
 img2 = ski.data.checkerboard()
@@ -20,23 +19,12 @@ img5 = img1 & img2
 img6 = img1 ^ img2
 
 # 显示图像
-fig, ax = plt.subplots(2, 3)
-ax[0, 0].axis('off')
-ax[0, 0].imshow(img1, cmap='gray')
-ax[0, 0].set_title('图像1')
-ax[0, 1].axis('off')
-ax[0, 1].imshow(img2, cmap='gray')
-ax[0, 1].set_title('图像2')
-ax[0, 2].axis('off')
-ax[0, 2].imshow(img3, cmap='gray')
-ax[0, 2].set_title('反运算图像')
-ax[1, 0].axis('off')
-ax[1, 0].imshow(img4, cmap='gray')
-ax[1, 0].set_title('或运算图像')
-ax[1, 1].axis('off')
-ax[1, 1].imshow(img5, cmap='gray')
-ax[1, 1].set_title('与运算图像')
-ax[1, 2].axis('off')
-ax[1, 2].imshow(img6, cmap='gray')
-ax[1, 2].set_title('异或运算图像')
-plt.show()
+fig = make_subplots(rows=2, cols=3, subplot_titles=[
+                    '图像1', '图像2', '反运算图像', '或运算图像', '与运算图像', '异或运算图像'])
+for index, image_data in enumerate([img1, img2, img3, img4, img5, img6]):
+    fig.add_trace(
+        px.imshow(image_data).data[0], row=index // 3 + 1, col=index % 3 + 1)
+fig.update_yaxes(autorange='reversed')
+fig.update_traces(colorscale='gray', coloraxis=None,
+                  showscale=False, selector={'type': 'heatmap'})
+fig.show()

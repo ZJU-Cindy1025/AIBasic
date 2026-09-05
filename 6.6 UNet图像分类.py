@@ -2,13 +2,11 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader, Dataset
-import matplotlib.pyplot as plt
+import plotly.express as px
+from plotly.subplots import make_subplots
 from tqdm import tqdm
 import numpy as np
 from skimage import data
-
-plt.rcParams["font.sans-serif"] = ["SimHei"]
-plt.rcParams["axes.unicode_minus"] = False
 
 
 class _Dataset(Dataset):
@@ -176,16 +174,13 @@ output = net(Test_image)
 output = output.cpu().detach().numpy()
 output = output.squeeze()
 
-fig, ax = plt.subplots(2, 2, figsize=(10, 10))
-ax[0, 0].imshow(TestDataset.train_data.astype(np.uint8))
-ax[0, 0].axis('off')
-ax[0, 0].set_title("原始影像")
-ax[0, 1].imshow(TestDataset.label_data.astype(np.uint8), cmap="gray")
-ax[0, 1].axis('off')
-ax[0, 1].set_title("标签")
-ax[1, 0].imshow((255-output).astype(np.uint8), cmap="gray")
-ax[1, 0].axis('off')
-ax[1, 0].set_title("预测")
-ax[1, 1].plot(losses)
-ax[1, 1].set_title("损失")
-plt.show()
+fig = make_subplots(rows=2, cols=2, subplot_titles=['原始影像', '标签', '预测', '损失'])
+fig.add_trace(px.imshow(TestDataset.train_data.astype(
+    np.uint8)).data[0], row=1, col=1)
+fig.add_trace(px.imshow(TestDataset.label_data.astype(
+    np.uint8), color_continuous_scale='gray').data[0], row=1, col=2)
+fig.add_trace(px.imshow((255-output).astype(np.uint8)).data[0], row=2, col=1)
+fig.add_trace(px.line(y=losses).data[0], row=2, col=2)
+fig.update_traces(colorscale='gray', coloraxis=None, showscale=False,
+                  selector={'type': 'heatmap'}, row=1, col=2)
+fig.show()

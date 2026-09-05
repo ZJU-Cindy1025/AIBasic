@@ -2,10 +2,8 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.decomposition import TruncatedSVD
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
-import seaborn as sns
-plt.rcParams['font.sans-serif'] = ['SimHei']  # 用来正常显示中文标签
-plt.rcParams['axes.unicode_minus'] = False  # 用来正常显示负号
+import plotly.express as px
+from plotly.subplots import make_subplots
 # 示例文档集合
 documents = pd.DataFrame.from_dict({
     'a1': 'Efficient Algorithms for Non-convex Isotonic Regression through Submodular Optimization.',
@@ -42,30 +40,16 @@ for i, comp in enumerate(lsa.components_):
     print(sortedTerms)
 
 # 绘制相关系数矩阵
-fig, ax = plt.subplots(2, 2, figsize=(8, 8))
+fig = make_subplots(rows=2, cols=2, subplot_titles=[
+                    '转换前的文档-文档相关系数矩阵', '转换后的文档-文档相关系数矩阵', '转换前的单词-单词相关系数矩阵', '转换后的单词-单词相关系数矩阵'])
 # 计算文档-文档相关系数矩阵
 A1 = np.abs(np.corrcoef(X.toarray()))
-sns.heatmap(A1, ax=ax[0, 0], vmin=0, vmax=1)
-ax[0, 0].set_xticks(range(len(documents)))
-ax[0, 0].set_xticklabels(documents.index)
-ax[0, 0].set_yticks(range(len(documents)))
-ax[0, 0].set_yticklabels(documents.index)
-ax[0, 0].set_title('转换前的文档-文档相关系数矩阵')
+fig.add_trace(px.imshow(A1, zmin=0, zmax=1).data[0], row=1, col=1)
 A2 = np.abs(np.corrcoef(lsa.fit_transform(X)))
-sns.heatmap(A2, ax=ax[0, 1], vmin=0, vmax=1)
-ax[0, 1].set_title('转换后的文档-文档相关系数矩阵')
-ax[0, 1].set_xticks(range(len(documents)))
-ax[0, 1].set_xticklabels(documents.index)
-ax[0, 1].set_yticks(range(len(documents)))
-ax[0, 1].set_yticklabels(documents.index)
+fig.add_trace(px.imshow(A2, zmin=0, zmax=1).data[0], row=1, col=2)
 # 计算单词-单词相关系数矩阵
 B1 = np.abs(np.corrcoef(X.toarray().T))
-sns.heatmap(B1, ax=ax[1, 0], vmin=0, vmax=1)
-ax[1, 0].axis('off')
-ax[1, 0].set_title('转换前的单词-单词相关系数矩阵')
+fig.add_trace(px.imshow(B1, zmin=0, zmax=1).data[0], row=2, col=1)
 B2 = np.abs(np.corrcoef(lsa.components_))
-sns.heatmap(B2, ax=ax[1, 1], vmin=0, vmax=1)
-ax[1, 1].axis('off')
-ax[1, 1].set_title('转换后的单词-单词相关系数矩阵')
-plt.tight_layout()
-plt.show()
+fig.add_trace(px.imshow(B2, zmin=0, zmax=1).data[0], row=2, col=2)
+fig.show()

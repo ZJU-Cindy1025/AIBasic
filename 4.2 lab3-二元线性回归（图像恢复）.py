@@ -1,10 +1,9 @@
 import numpy as np
 from sklearn.linear_model import LinearRegression
 from sklearn.datasets import load_sample_image
-import matplotlib.pyplot as plt
+import plotly.express as px
+from plotly.subplots import make_subplots
 from tqdm import tqdm
-plt.rcParams['font.sans-serif'] = ['SimHei']  # 用来正常显示中文标签
-plt.rcParams['axes.unicode_minus'] = False  # 用来正常显示负号
 # 读取图像
 base_img = load_sample_image('flower.jpg')
 # 生成受损图像
@@ -53,14 +52,13 @@ for channel in range(damage_img.shape[2]):
 print('恢复图像与原始图像的2-范数之和：', error)
 
 # 显示图像
-fig, ax = plt.subplots(1, 3, figsize=(6, 2))
-ax[0].axis('off')
-ax[0].imshow(base_img)
-ax[0].set_title('原图')
-ax[1].axis('off')
-ax[1].imshow(damage_img)
-ax[1].set_title('受损图')
-ax[2].axis('off')
-ax[2].imshow(repaired_img)
-ax[2].set_title('修复图')
-plt.show()
+fig = make_subplots(rows=1, cols=3, subplot_titles=['原图', '受损图', '修复图'])
+display_images = [
+    np.ascontiguousarray(np.clip(image, 0, 255).astype(np.uint8))
+    for image in [base_img, damage_img, repaired_img]
+]
+for column, image in enumerate(display_images, 1):
+    fig.add_trace(px.imshow(image, binary_string=True).data[0], row=1, col=column)
+fig.update_xaxes(showticklabels=False, showgrid=False, zeroline=False)
+fig.update_yaxes(showticklabels=False, showgrid=False, zeroline=False)
+fig.show()

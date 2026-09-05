@@ -1,10 +1,9 @@
 from sklearn.cluster import KMeans
-import matplotlib.pyplot as plt
-import seaborn as sns
+import plotly.express as px
+from plotly.subplots import make_subplots
 from sklearn import datasets
 from sklearn.preprocessing import StandardScaler
-plt.rcParams["font.sans-serif"] = ["SimHei"]  # 设置字体
-plt.rcParams["axes.unicode_minus"] = False  # 该语句解决图像中的“-”负号的乱码问题
+import pandas as pd
 
 # 读取iris数据集
 data = datasets.load_iris()
@@ -22,22 +21,23 @@ n_clusters = 3
 model = KMeans(n_clusters=n_clusters)
 model.fit(data['data'])
 
-fig, ax = plt.subplots(1, 3, figsize=(12, 4))
-ax[0].plot(range(1, 10), inertia)
-ax[0].set_title('肘方法')
-ax[0].set_xlabel('簇数')
-ax[0].set_ylabel('簇内误差平方和')
-sns.scatterplot(x=data['data'][:, 0], y=data['data']
-                [:, 1], hue=model.labels_, data=data, ax=ax[1])
-ax[1].scatter(model.cluster_centers_[:, 0],
-              model.cluster_centers_[:, 1], c='red', marker='x')
-ax[1].set_title('KMeans聚类')
-ax[1].set_xlabel('花萼长度')
-ax[1].set_ylabel('花萼宽度')
-sns.scatterplot(x=data['data'][:, 0], y=data['data']
-                [:, 1], hue='target', data=data, ax=ax[2])
-ax[2].set_title('参考标签')
-ax[2].set_xlabel('花萼长度')
-ax[2].set_ylabel('花萼宽度')
-plt.show()
-plt.close()
+fig = make_subplots(rows=1, cols=3, subplot_titles=['肘方法', 'KMeans聚类', '参考标签'])
+fig.add_trace(px.line(x=list(range(1, 10)), y=inertia).data[0], row=1, col=1)
+for label, group in pd.DataFrame({'x': data['data'][:, 0], 'y': data['data'][:, 1], 'label': model.labels_}).groupby('label'):
+    fig.add_trace(px.scatter(group, x='x', y='y',
+                  title=f'cluster {label}').data[0], row=1, col=2)
+centers = px.scatter(x=model.cluster_centers_[
+                     :, 0], y=model.cluster_centers_[:, 1]).data[0]
+centers.marker.symbol = 'x'
+centers.marker.color = 'red'
+fig.add_trace(centers, row=1, col=2)
+for label, group in pd.DataFrame({'x': data['data'][:, 0], 'y': data['data'][:, 1], 'label': data['target']}).groupby('label'):
+    fig.add_trace(px.scatter(group, x='x', y='y',
+                  title=f'target {label}').data[0], row=1, col=3)
+fig.update_xaxes(title_text='簇数', row=1, col=1)
+fig.update_yaxes(title_text='簇内误差平方和', row=1, col=1)
+fig.update_xaxes(title_text='花萼长度', row=1, col=2)
+fig.update_yaxes(title_text='花萼宽度', row=1, col=2)
+fig.update_xaxes(title_text='花萼长度', row=1, col=3)
+fig.update_yaxes(title_text='花萼宽度', row=1, col=3)
+fig.show()

@@ -1,9 +1,8 @@
 import skimage as ski
-import matplotlib.pyplot as plt
+import plotly.express as px
+from plotly.subplots import make_subplots
 import numpy as np
 from sklearn.cluster import KMeans
-plt.rcParams['font.sans-serif'] = ['SimHei']  # 用来正常显示中文标签
-plt.rcParams['axes.unicode_minus'] = False  # 用来正常显示负号
 
 # 读取图像
 img = ski.data.chelsea()
@@ -21,11 +20,9 @@ for i in range(3):
 img_kmeans = img_kmeans.reshape(img.shape)
 
 # 显示结果
-fig, ax = plt.subplots(1, 2)
-ax[0].imshow(img)
-ax[0].axis('off')
-ax[0].set_title('原图像')
-ax[1].imshow(img_kmeans)
-ax[1].axis('off')
-ax[1].set_title('KMeans聚类后图像')
-plt.show()
+fig = make_subplots(rows=1, cols=2, subplot_titles=['原图像', 'KMeans聚类后图像'])
+fig.add_trace(px.imshow(img).data[0], row=1, col=1)
+fig.add_trace(px.imshow(img_kmeans).data[0], row=1, col=2)
+fig.update_yaxes(autorange='reversed')
+fig.update_traces(showscale=False, selector={'type': 'heatmap'})
+fig.show()

@@ -2,11 +2,8 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader, Dataset
-import matplotlib.pyplot as plt
+import plotly.express as px
 from tqdm import tqdm
-
-plt.rcParams["font.sans-serif"] = ["SimHei"]
-plt.rcParams["axes.unicode_minus"] = False
 
 
 # 模拟时间序列数据集
@@ -84,5 +81,5 @@ for x, y in train_loader:
     print(net(x).cpu().detach().numpy().reshape(1, -1))
     print(y.cpu().detach().numpy().reshape(1, -1))
 
-plt.plot(losses)
-plt.show()
+fig = px.line(y=losses, labels={'x': '迭代次数', 'y': '损失'})
+fig.show()

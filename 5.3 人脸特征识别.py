@@ -1,13 +1,14 @@
 import cv2
 import skimage as ski
-import matplotlib.pyplot as plt
+import plotly.express as px
+from plotly.subplots import make_subplots
 from tqdm import tqdm
 
 # 加载预训练的人脸检测模型
 face_cascade = cv2.CascadeClassifier(
     cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
 lfw_images = ski.data.lfw_subset()
-fig, ax = plt.subplots(5, 8, figsize=(16, 10))
+fig = make_subplots(rows=5, cols=8)
 for i in tqdm(range(80, 120)):
     img = ski.util.img_as_ubyte(lfw_images[i])
     img = cv2.resize(img, (500, 500))
@@ -17,8 +18,7 @@ for i in tqdm(range(80, 120)):
     for (x, y, w, h) in faces:
         cv2.rectangle(img, (x, y), (x+w, y+h), 255, 10)
     # 显示结果
-    ax[(i-80)//8, (i-80) % 8].imshow(img, cmap='gray')
-    ax[(i-80)//8, (i-80) % 8].axis('off')
+    fig.add_trace(px.imshow(img).data[0], row=(
+        i - 80) // 8 + 1, col=(i - 80) % 8 + 1)
 
-plt.tight_layout()
-plt.show()
+fig.show()

@@ -1,6 +1,7 @@
 from sklearn import tree
 import pandas as pd
-import matplotlib.pyplot as plt
+import plotly.express as px
+from skimage.io import imread
 import graphviz
 import os
 data = pd.DataFrame({
@@ -32,8 +33,7 @@ dot_data = tree.export_graphviz(clf, out_file=None,
                                 fontname='SimHei')
 graph = graphviz.Source(dot_data)
 graph.render('决策树', format='png')  # 保存决策树
-plt.imshow(plt.imread('决策树.png'))
-plt.axis('off')
+fig = px.imshow(imread('决策树.png'))
 os.remove('决策树')
 os.remove('决策树.png')
-plt.show()
+fig.show()

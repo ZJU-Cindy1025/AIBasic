@@ -1,8 +1,7 @@
 from sklearn import svm
 import pandas as pd
-import matplotlib.pyplot as plt
 import numpy as np
-import seaborn as sns
+import plotly.express as px
 
 # 生成数据
 data = pd.DataFrame({
@@ -20,6 +19,6 @@ xx = np.linspace(np.min(data['x']), np.max(data['x']))
 yy = k*xx-model.intercept_/model.coef_[0][1]
 
 # 绘图
-sns.scatterplot(x='x', y='y', hue='label', data=data)
-plt.plot(xx, yy)
-plt.show()
+fig = px.scatter(data, x='x', y='y', color='label')
+fig.add_trace(px.line(x=xx, y=yy).data[0])
+fig.show()

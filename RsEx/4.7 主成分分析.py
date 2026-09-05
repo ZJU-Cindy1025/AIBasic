@@ -1,9 +1,8 @@
 import skimage as ski
-import matplotlib.pyplot as plt
+import plotly.express as px
+from plotly.subplots import make_subplots
 import numpy as np
 from sklearn.decomposition import PCA
-plt.rcParams['font.sans-serif'] = ['SimHei']  # 用来正常显示中文标签
-plt.rcParams['axes.unicode_minus'] = False  # 用来正常显示负号
 
 # 读取示例图片
 image = ski.data.astronaut()
@@ -21,12 +20,9 @@ reconstructed_image = reconstructed_image.reshape(image.shape)
 reconstructed_image = np.uint8(reconstructed_image)
 
 # 显示原始和变换后的图片
-fig, ax = plt.subplots(1, 2)
-ax[0].axis('off')
-ax[0].imshow(image)
-ax[0].set_title('原图')
-# 可视化PCA变换后的图片
-ax[1].axis('off')
-ax[1].imshow(reconstructed_image, cmap='gray')
-ax[1].set_title('第一主成分假彩色影像')
-plt.show()
+fig = make_subplots(rows=1, cols=2, subplot_titles=['原图', '第一主成分假彩色影像'])
+fig.add_trace(px.imshow(image).data[0], row=1, col=1)
+fig.add_trace(px.imshow(reconstructed_image).data[0], row=1, col=2)
+fig.update_yaxes(autorange='reversed')
+fig.update_traces(showscale=False, selector={'type': 'heatmap'})
+fig.show()

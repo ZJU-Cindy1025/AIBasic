@@ -1,8 +1,7 @@
 import numpy as np
 import skimage as ski
-import matplotlib.pyplot as plt
-plt.rcParams['font.sans-serif'] = ['SimHei']  # 用来正常显示中文标签
-plt.rcParams['axes.unicode_minus'] = False  # 用来正常显示负号
+import plotly.express as px
+from plotly.subplots import make_subplots
 # 读取图像
 coins = ski.data.coins()
 # 提取边缘
@@ -16,12 +15,11 @@ seeds[grid] = np.arange(seeds[grid].size).reshape(seeds[grid].shape) + 1
 # 分水岭算法分割
 watershed = ski.segmentation.watershed(edges, seeds)
 
-fig, ax = plt.subplots(1, 2)
-ax[0].axis('off')
-ax[0].imshow(coins, cmap='gray')
-ax[0].set_title('原图')
-ax[1].axis('off')
-ax[1].imshow(watershed, cmap='gray')
-ax[1].set_title('分水岭算法分割')
-
-plt.show()
+fig = make_subplots(rows=1, cols=2, subplot_titles=['原图', '分水岭算法分割'])
+for column, image_data in enumerate([coins, watershed], 1):
+    fig.add_trace(px.imshow(
+        image_data).data[0], row=1, col=column)
+fig.update_yaxes(autorange='reversed')
+fig.update_traces(colorscale='gray', coloraxis=None,
+                  showscale=False, selector={'type': 'heatmap'})
+fig.show()

@@ -1,5 +1,5 @@
 import networkx as nx
-import matplotlib.pyplot as plt
+import plotly.express as px
 # 创建一个无向图
 G = nx.Graph()
 # 添加边，表示两个节点之间的通路
@@ -24,5 +24,18 @@ G.add_edge('K', 'L', weight=6)
 for path in nx.all_simple_paths(G, source='A', target='K'):
     print(path, nx.path_weight(G, path, 'weight'))  # 输出路径和路径长度
 
-nx.draw(G, with_labels=True)
-plt.show()
+positions = nx.spring_layout(G, seed=0)
+edge_x, edge_y = [], []
+for source, target in G.edges:
+    edge_x.extend([positions[source][0], positions[target][0], None])
+    edge_y.extend([positions[source][1], positions[target][1], None])
+fig = px.line(x=edge_x, y=edge_y)
+fig.add_trace(px.scatter(
+    x=[positions[node][0] for node in G.nodes],
+    y=[positions[node][1] for node in G.nodes],
+    text=list(G.nodes),
+).data[0])
+fig.data[-1].mode = 'markers+text'
+fig.data[-1].textposition = 'top center'
+fig.update_layout(showlegend=False, xaxis_visible=False, yaxis_visible=False)
+fig.show()

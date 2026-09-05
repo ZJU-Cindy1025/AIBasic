@@ -1,7 +1,6 @@
 import numpy as np
-import matplotlib.pyplot as plt
-plt.rcParams['font.sans-serif'] = ['SimHei']  # 用来正常显示中文标签
-plt.rcParams['axes.unicode_minus'] = False  # 用来正常显示负号
+import plotly.express as px
+from plotly.subplots import make_subplots
 
 # 参数设定
 K = 5  # 赌博机数量
@@ -54,33 +53,21 @@ def greedy():
 greedy()
 
 # 绘制到同一行的figure中
-plt.figure(figsize=(18, 6))
+fig = make_subplots(rows=1, cols=3, subplot_titles=[
+                    '每个赌博机收益分布情况', '每个赌博机被选择的次数', '每个赌博机的平均收益'])
 
 # 第一个子图：每个赌博机收益分布的箱型图
-plt.subplot(1, 3, 1)
-plt.boxplot([np.random.normal(mu[i], sigma, T) for i in range(K)],
-            labels=['赌博机 1', '赌博机 2', '赌博机 3', '赌博机 4', '赌博机 5'])
-plt.title('每个赌博机收益分布情况')
-plt.xlabel('赌博机臂')
-plt.ylabel('收益分布')
+for i in range(K):
+    fig.add_trace(px.box(y=np.random.normal(mu[i], sigma, T),
+                         labels={'y': f'赌博机 {i + 1}'}).data[0], row=1, col=1)
 
 # 第二个子图：每个赌博机被选择次数的柱状图
-plt.subplot(1, 3, 2)
-plt.bar(range(1, K+1), action_counts)
-plt.title('每个赌博机被选择的次数')
-plt.xlabel('赌博机臂')
-plt.ylabel('选择次数')
-plt.xticks(range(1, K+1), ['赌博机 1', '赌博机 2', '赌博机 3', '赌博机 4', '赌博机 5'])
+fig.add_trace(px.bar(x=list(range(1, K + 1)),
+              y=action_counts).data[0], row=1, col=2)
 
 # 第三个子图：每个赌博机的平均收益柱状图
 average_rewards = [action_rewards[i] / action_counts[i]
                    if action_counts[i] > 0 else 0 for i in range(K)]
-plt.subplot(1, 3, 3)
-plt.bar(range(1, K+1), average_rewards)
-plt.title('每个赌博机的平均收益')
-plt.xlabel('赌博机臂')
-plt.ylabel('平均收益')
-plt.xticks(range(1, K+1), ['赌博机 1', '赌博机 2', '赌博机 3', '赌博机 4', '赌博机 5'])
-
-plt.tight_layout()
-plt.show()
+fig.add_trace(px.bar(x=list(range(1, K + 1)),
+              y=average_rewards).data[0], row=1, col=3)
+fig.show()

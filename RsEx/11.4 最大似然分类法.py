@@ -1,9 +1,8 @@
 import skimage as ski
-import matplotlib.pyplot as plt
+import plotly.express as px
+from plotly.subplots import make_subplots
 from sklearn.metrics import confusion_matrix
 from sklearn.naive_bayes import GaussianNB
-plt.rcParams['font.sans-serif'] = ['SimHei']  # 用来正常显示中文标签
-plt.rcParams['axes.unicode_minus'] = False  # 用来正常显示负号
 # 读取图像
 image = ski.data.coins()
 # 转换训练标签
@@ -21,21 +20,16 @@ clf.fit(image.reshape(-1, 1), train_label.reshape(-1))
 result_label = clf.predict(image.reshape(-1, 1)).reshape(image.shape)
 
 # 显示分类结果
-fig, ax = plt.subplots(2, 2)
-ax[0, 0].imshow(image, cmap='gray')
-ax[0, 0].set_title('原图')
-ax[0, 0].axis('off')
-ax[0, 1].imshow(train_label, cmap='gray')
-ax[0, 1].set_title('训练标签')
-ax[0, 1].axis('off')
-ax[1, 0].imshow(true_label, cmap='gray')
-ax[1, 0].set_title('真实标签')
-ax[1, 0].axis('off')
-ax[1, 1].imshow(result_label, cmap='gray')
-ax[1, 1].set_title('最大似然分类标签')
-ax[1, 1].axis('off')
-plt.show()
-plt.imsave('RsEx/coins_result/coins_MLE_result.png', result_label, cmap="gray")
+fig = make_subplots(rows=2, cols=2, subplot_titles=[
+                    '原图', '训练标签', '真实标签', '最大似然分类标签'])
+for row, col, image_data in [(1, 1, image), (1, 2, train_label), (2, 1, true_label), (2, 2, result_label)]:
+    fig.add_trace(
+        px.imshow(image_data).data[0], row=row, col=col)
+fig.update_yaxes(autorange='reversed')
+fig.update_traces(colorscale='gray', coloraxis=None,
+                  showscale=False, selector={'type': 'heatmap'})
+fig.show()
+ski.io.imsave('RsEx/coins_result/coins_MLE_result.png', result_label)
 
 # 计算混淆矩阵
 matrix = confusion_matrix(true_label.reshape(-1), result_label.reshape(-1))

@@ -1,7 +1,6 @@
 import skimage as ski
-import matplotlib.pyplot as plt
-plt.rcParams['font.sans-serif'] = ['SimHei']  # 用来正常显示中文标签
-plt.rcParams['axes.unicode_minus'] = False  # 用来正常显示负号
+import plotly.express as px
+from plotly.subplots import make_subplots
 
 # 读取图像
 img1 = ski.data.camera()
@@ -26,21 +25,12 @@ threhold4 = ski.filters.threshold_yen(img1)
 img5 = img1 > threhold4
 
 # 显示结果
-fig, ax = plt.subplots(1, 5, figsize=(15, 3))
-ax[0].imshow(img1, cmap='gray')
-ax[0].axis('off')
-ax[0].set_title('原图像')
-ax[1].imshow(img2, cmap='gray')
-ax[1].axis('off')
-ax[1].set_title('直方图法')
-ax[2].imshow(img3, cmap='gray')
-ax[2].axis('off')
-ax[2].set_title('基本全局阈值法')
-ax[3].imshow(img4, cmap='gray')
-ax[3].axis('off')
-ax[3].set_title('P参数法')
-ax[4].imshow(img5, cmap='gray')
-ax[4].axis('off')
-ax[4].set_title('最优准则法')
-plt.tight_layout()
-plt.show()
+fig = make_subplots(rows=1, cols=5, subplot_titles=[
+                    '原图像', '直方图法', '基本全局阈值法', 'P参数法', '最优准则法'])
+for column, image_data in enumerate([img1, img2, img3, img4, img5], 1):
+    fig.add_trace(px.imshow(
+        image_data).data[0], row=1, col=column)
+fig.update_yaxes(autorange='reversed')
+fig.update_traces(colorscale='gray', coloraxis=None,
+                  showscale=False, selector={'type': 'heatmap'})
+fig.show()
